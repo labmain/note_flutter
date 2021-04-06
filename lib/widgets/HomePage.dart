@@ -11,7 +11,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   void _incrementCounter() {
-    Navigator.of(context).pushNamed(Routers.editNote);
+    Navigator.of(context).pushNamed(Routers.mdDemo);
   }
 
   void _listOnTap() {}
