@@ -26,7 +26,8 @@ class _NoteListPageState extends State<NoteListPage> {
   void _getNotebookList() async {
     try {
       // 获取笔记本列表
-      notes = await SystemNetUtils.getAllNoteList();
+      notes =
+          await SystemNetUtils.getAllNoteList(notebookID: widget.notebook.id);
       // 刷新ui
       setState(() {});
     } catch (e) {
@@ -69,7 +70,12 @@ class _NoteListPageState extends State<NoteListPage> {
                   Navigator.of(context)
                       .push(new MaterialPageRoute(builder: (_) {
                     return NoteEditPage(widget.notebook, notes[index]);
-                  }));
+                  })).then<bool>((isRefresh) {
+                    var r = isRefresh as bool;
+                    if (r) {
+                      _getNotebookList();
+                    }
+                  });
                 },
               ),
           ],
@@ -80,7 +86,12 @@ class _NoteListPageState extends State<NoteListPage> {
           Navigator.of(context).push(new MaterialPageRoute(builder: (_) {
             return NoteEditPage(
                 widget.notebook, NoteModel.createNote(widget.notebook.id));
-          }));
+          })).then<bool>((isRefresh) {
+            var r = isRefresh as bool;
+            if (r) {
+              _getNotebookList();
+            }
+          });
         },
         tooltip: 'Increment',
         child: Icon(Icons.add),

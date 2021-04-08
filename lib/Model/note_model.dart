@@ -8,18 +8,25 @@ class NoteModel {
   String noteBookID;
 
   /// 笔记本标题
-  String title;
+  String get title {
+    if (content == null) {
+      return "无内容";
+    }
+    if (content.length < 10) {
+      return content;
+    }
+    return content.substring(0, 10);
+  }
 
   /// 笔记内容
   String content;
   String userID;
 
-  NoteModel({this.id, this.title, this.content, this.userID});
+  NoteModel({this.id, this.content, this.userID});
 
   NoteModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    title = json['title'];
-    noteBookID = json['note_book_id'];
+    noteBookID = json['noteBookID'];
     content = json['content'];
     userID = json['userID'];
   }
@@ -27,7 +34,6 @@ class NoteModel {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
-    data['title'] = this.title;
     data['noteBookID'] = this.noteBookID;
     data['content'] = this.content;
     data['user_id'] = this.userID;

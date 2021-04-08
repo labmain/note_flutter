@@ -162,7 +162,7 @@ class NetUtils {
             body,
             version,
           );
-          response = await _dio.post(
+          response = await _dio.delete(
             url,
             data: body,
             options: options,

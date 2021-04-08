@@ -17,6 +17,7 @@ class NoteEditPage extends StatefulWidget {
 /// State for [NoteEditPage] widgets.
 class _NoteEditPageState extends State<NoteEditPage> {
   final TextEditingController _controller = new TextEditingController();
+  bool isChange = false;
   // 保存
   void _saveContent() async {
     if (_controller.text.isEmpty) {
@@ -24,9 +25,15 @@ class _NoteEditPageState extends State<NoteEditPage> {
           .showSnackBar(SnackBar(content: Text("请在输入一些内容！")));
       return;
     }
+    if (widget.noteModel.content == _controller.text) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("没有更改内容！")));
+      return;
+    }
     widget.noteModel.content = _controller.text;
     var isOK = await SystemNetUtils.saveNote(widget.noteModel);
     if (isOK) {
+      isChange = true;
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("保存成功！")));
     } else {
@@ -35,15 +42,18 @@ class _NoteEditPageState extends State<NoteEditPage> {
     }
   }
 
+  void _deleteNote() {}
+
   @override
   Widget build(BuildContext context) {
+    _controller.text = widget.noteModel.content;
     return Scaffold(
       appBar: AppBar(
         title: Text("编辑页面"),
         leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(isChange);
             }),
         actions: [
           IconButton(
@@ -52,6 +62,43 @@ class _NoteEditPageState extends State<NoteEditPage> {
               Navigator.of(context).push(new MaterialPageRoute(builder: (_) {
                 return new NotePreviewPage(markdownData: _controller.text);
               }));
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text("提示"),
+                      content: Text("您确定要删除当前文件吗?"),
+                      actions: <Widget>[
+                        TextButton(
+                          child: Text("取消"),
+                          onPressed: () =>
+                              {Navigator.of(context).pop('cancel')},
+                        ),
+                        TextButton(
+                          child: Text("删除"),
+                          onPressed: () {
+                            isChange = true;
+                            Navigator.of(context).pop(true);
+                            // 执行删除操作
+                            SystemNetUtils.deleteNote(widget.noteModel.id)
+                                .then((isOK) {
+                              Navigator.of(context).pop(true);
+                              if (isOK) {
+                                print("删除成功");
+                              } else {
+                                print("删除失败！");
+                              }
+                            });
+                          },
+                        ),
+                      ],
+                    );
+                  });
             },
           ),
           IconButton(

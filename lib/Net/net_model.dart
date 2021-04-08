@@ -18,16 +18,16 @@ class SystemNetUtils {
   }
 
   /// 返回所有的笔记列表
-  static Future<List<NoteModel>> getAllNoteList() async {
-    ResponseResult<NoteModel> result =
-        await NetUtils.instance.get<NoteModel>('$iPString/note');
+  static Future<List<NoteModel>> getAllNoteList({String notebookID}) async {
+    ResponseResult<NoteModel> result = await NetUtils.instance
+        .get<NoteModel>('$iPString/note', params: {"id": notebookID});
     return result.list;
   }
 
   /// 删除一个笔记
-  static Future<bool> deleteNote(NoteModel note) async {
+  static Future<bool> deleteNote(String noteID) async {
     ResponseResult result =
-        await NetUtils.instance.del("$iPString/note", body: note.toJson());
+        await NetUtils.instance.del("$iPString/note", body: {"id": noteID});
     return result.state == ResponseResultType.success;
   }
 
