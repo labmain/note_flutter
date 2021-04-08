@@ -3,10 +3,11 @@ import 'package:note_flutter/Model/note_model.dart';
 import 'package:note_flutter/Model/notebook_model.dart';
 import 'package:note_flutter/Net/net_model.dart';
 import 'package:note_flutter/Routers/Routers.dart';
+import 'package:note_flutter/widgets/NoteEditPage.dart';
 
 class NoteListPage extends StatefulWidget {
-  final String notebookID;
-  NoteListPage({Key key, @required this.notebookID, this.title})
+  NotebookModel notebook;
+  NoteListPage({Key key, @required this.notebook, this.title})
       : super(key: key);
   final String title;
 
@@ -21,7 +22,7 @@ class _NoteListPageState extends State<NoteListPage> {
     // getNotebookList();
   }
 
-  void _listOnTap() {}
+  void _createNewNote(NotebookModel notebook) {}
   void _getNotebookList() async {
     try {
       // 获取笔记本列表
@@ -64,13 +65,23 @@ class _NoteListPageState extends State<NoteListPage> {
                 ),
                 title: Text(notes[index].title),
                 subtitle: Text("subtitle"),
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context)
+                      .push(new MaterialPageRoute(builder: (_) {
+                    return NoteEditPage(widget.notebook, notes[index]);
+                  }));
+                },
               ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _getNotebookList,
+        onPressed: () {
+          Navigator.of(context).push(new MaterialPageRoute(builder: (_) {
+            return NoteEditPage(
+                widget.notebook, NoteModel.createNote(widget.notebook.id));
+          }));
+        },
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.

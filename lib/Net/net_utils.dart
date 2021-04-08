@@ -118,7 +118,7 @@ class NetUtils {
     String method,
     String url, {
     String version,
-    String body,
+    Map<String, dynamic> body,
     Map<String, dynamic> header,
     Map<String, dynamic> params,
     Function(ResponseResult<T> result) finished,
@@ -148,11 +148,23 @@ class NetUtils {
             body,
             version,
           );
-          FormData formData = FormData.fromMap(params);
           response = await _dio.post(
             url,
-//            queryParameters: params,
-            data: formData,
+            data: body,
+            options: options,
+          );
+          break;
+        case NET_DELETE:
+          Options options = requestBaseHeader(
+            header,
+            url,
+            NET_DELETE,
+            body,
+            version,
+          );
+          response = await _dio.post(
+            url,
+            data: body,
             options: options,
           );
           break;
@@ -176,9 +188,6 @@ class NetUtils {
     Map<String, dynamic> params,
     Function(ResponseResult<T> result) finished,
   }) {
-    if (T is NotebookModel) {
-      print("object");
-    }
     return _request<T>(
       NET_GET,
       url,
@@ -193,7 +202,7 @@ class NetUtils {
   Future post<T>(
     String url, {
     String version,
-    String body,
+    Map<String, dynamic> body,
     Map<String, dynamic> header,
     Map<String, dynamic> params,
     Function(ResponseResult<T> result) finished,
@@ -202,6 +211,27 @@ class NetUtils {
       NET_POST,
       url,
       version: version,
+      body: body,
+      header: header,
+      params: params,
+      finished: finished,
+    );
+  }
+
+  /// 主动发起请求 post
+  Future del<T>(
+    String url, {
+    String version,
+    Map<String, dynamic> body,
+    Map<String, dynamic> header,
+    Map<String, dynamic> params,
+    Function(ResponseResult<T> result) finished,
+  }) {
+    return _request<T>(
+      NET_DELETE,
+      url,
+      version: version,
+      body: body,
       header: header,
       params: params,
       finished: finished,
@@ -213,7 +243,7 @@ class NetUtils {
     Map<String, dynamic> headerParams,
     String url,
     String method,
-    String body,
+    Map<String, dynamic> body,
     String version,
   ) {
     Options options = Options();

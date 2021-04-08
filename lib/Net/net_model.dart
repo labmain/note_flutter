@@ -23,4 +23,18 @@ class SystemNetUtils {
         await NetUtils.instance.get<NoteModel>('$iPString/note');
     return result.list;
   }
+
+  /// 删除一个笔记
+  static Future<bool> deleteNote(NoteModel note) async {
+    ResponseResult result =
+        await NetUtils.instance.del("$iPString/note", body: note.toJson());
+    return result.state == ResponseResultType.success;
+  }
+
+  /// 保存一个笔记
+  static Future<bool> saveNote(NoteModel note) async {
+    ResponseResult result =
+        await NetUtils.instance.post("$iPString/note", body: note.toJson());
+    return result.state == ResponseResultType.success;
+  }
 }

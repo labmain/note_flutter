@@ -1,47 +1,45 @@
+import 'package:uuid/uuid.dart';
+
 class NoteModel {
   /// 笔记id
   String id;
 
   /// 关联的书本id
-  String note_book_id;
+  String noteBookID;
 
   /// 笔记本标题
   String title;
 
   /// 笔记内容
   String content;
-  double create_time;
-  double update_time;
-  String user_id;
+  String userID;
 
-  NoteModel(
-      {this.id,
-      this.title,
-      this.content,
-      this.create_time,
-      this.update_time,
-      this.user_id});
+  NoteModel({this.id, this.title, this.content, this.userID});
 
   NoteModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     title = json['title'];
-    note_book_id = json['note_book_id'];
+    noteBookID = json['note_book_id'];
     content = json['content'];
-    create_time = json['create_time'];
-    update_time = json['create_time'];
-    user_id = json['user_id'];
+    userID = json['userID'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
     data['title'] = this.title;
-    data['note_book_id'] = this.note_book_id;
+    data['noteBookID'] = this.noteBookID;
     data['content'] = this.content;
-    data['create_time'] = this.create_time;
-    data['update_time'] = this.update_time;
-    data['user_id'] = this.user_id;
+    data['user_id'] = this.userID;
 
     return data;
+  }
+
+  // 创建一个笔记模型
+  static NoteModel createNote(String notebookID) {
+    var note = NoteModel();
+    note.noteBookID = notebookID;
+    note.id = Uuid().v1();
+    return note;
   }
 }

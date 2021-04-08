@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text("笔记本列表"),
       ),
       drawer: Drawer(
         child: ListView(
@@ -95,7 +95,7 @@ class _HomePageState extends State<HomePage> {
                   Navigator.of(context)
                       .push(new MaterialPageRoute(builder: (_) {
                     return NoteListPage(
-                      notebookID: id,
+                      notebook: notebookList[index],
                       title: "笔记列表",
                     );
                   }));

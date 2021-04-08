@@ -12,7 +12,7 @@ class Routers {
           title: "标题",
         ),
     // 编辑
-    editNote: (context) => NoteEditPage(),
+    // editNote: (context) => NoteEditPage(),
     previewNode: (context) => NotePreviewPage(
           markdownData: '',
         ),
