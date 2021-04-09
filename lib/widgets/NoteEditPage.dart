@@ -17,6 +17,8 @@ class NoteEditPage extends StatefulWidget {
 /// State for [NoteEditPage] widgets.
 class _NoteEditPageState extends State<NoteEditPage> {
   final TextEditingController _controller = new TextEditingController();
+
+  /// 是否有保存，删除的操作
   bool isChange = false;
   // 保存
   void _saveContent() async {
@@ -45,6 +47,15 @@ class _NoteEditPageState extends State<NoteEditPage> {
   void _deleteNote() {}
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _controller.addListener(() {
+      // 监听内容修改
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     _controller.text = widget.noteModel.content;
     return Scaffold(
@@ -53,7 +64,34 @@ class _NoteEditPageState extends State<NoteEditPage> {
         leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () {
-              Navigator.of(context).pop(isChange);
+              if (widget.noteModel.content != _controller.text) {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text("提示"),
+                        content: Text("发现有未保存的内容!"),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text("离开"),
+                            onPressed: () {
+                              Navigator.of(context).pop(true);
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: Text("再想想"),
+                            onPressed: () {
+                              isChange = true;
+                              Navigator.of(context).pop(true);
+                            },
+                          ),
+                        ],
+                      );
+                    });
+              } else {
+                Navigator.of(context).pop(isChange);
+              }
             }),
         actions: [
           IconButton(

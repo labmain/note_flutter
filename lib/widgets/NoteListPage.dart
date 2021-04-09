@@ -35,6 +35,12 @@ class _NoteListPageState extends State<NoteListPage> {
     }
   }
 
+  Widget showUpdateTime(double time) {
+    var date = new DateTime.fromMillisecondsSinceEpoch((time * 1000).toInt());
+
+    return Text(date.toString());
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -65,7 +71,7 @@ class _NoteListPageState extends State<NoteListPage> {
                   child: CircleAvatar(child: Text("$index")),
                 ),
                 title: Text(notes[index].title),
-                subtitle: Text("subtitle"),
+                subtitle: showUpdateTime(notes[index].updateTime),
                 onTap: () {
                   Navigator.of(context)
                       .push(new MaterialPageRoute(builder: (_) {

@@ -7,15 +7,18 @@ class NoteModel {
   /// 关联的书本id
   String noteBookID;
 
+  /// 时间戳
+  double updateTime;
+
   /// 笔记本标题
   String get title {
     if (content == null) {
       return "无内容";
     }
-    if (content.length < 10) {
-      return content;
+    if (content.length < 40) {
+      return content.replaceAll("\n", "\t");
     }
-    return content.substring(0, 10);
+    return content.substring(0, 40).replaceAll("\n", "\t");
   }
 
   /// 笔记内容
@@ -29,6 +32,7 @@ class NoteModel {
     noteBookID = json['noteBookID'];
     content = json['content'];
     userID = json['userID'];
+    updateTime = json["updateTime"];
   }
 
   Map<String, dynamic> toJson() {
