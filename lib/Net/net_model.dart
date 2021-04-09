@@ -17,6 +17,20 @@ class SystemNetUtils {
     return result.list;
   }
 
+  static Future<bool> checkNotebookName(String name) async {
+    ResponseResult<Map<String, dynamic>> result = await NetUtils.instance
+        .get<Map<String, dynamic>>("$iPString/notebook/check",
+            params: {"name": name});
+    return result.result["isHas"] == "1";
+  }
+
+  /// 创建一本笔记
+  static Future<bool> createNotebook(NotebookModel notebook) async {
+    ResponseResult<NotebookModel> result = await NetUtils.instance
+        .post<NotebookModel>("$iPString/notebook", body: notebook.toJson());
+    return result.state == ResponseResultType.success;
+  }
+
   /// 返回所有的笔记列表
   static Future<List<NoteModel>> getAllNoteList({String notebookID}) async {
     ResponseResult<NoteModel> result = await NetUtils.instance

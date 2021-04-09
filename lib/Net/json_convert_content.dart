@@ -60,7 +60,7 @@ class JsonConvert<T> {
         return json;
     }
 
-    return null;
+    return json;
     //return _fromJsonSingle<M>(json) as M;
     // if (json is List && type.contains("List<")) {
     //   String itemType = type.substring(5, type.length - 1);

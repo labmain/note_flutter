@@ -1,29 +1,24 @@
+import 'package:uuid/uuid.dart';
+
 class NotebookModel {
   String id;
   String name;
-  List<String> note_list;
-  double create_time;
-  double update_time;
-  String user_id;
+  List<String> noteList;
+  double updateTime;
+  String userID;
 
   NotebookModel(
-      {this.id,
-      this.name,
-      this.note_list,
-      this.create_time,
-      this.update_time,
-      this.user_id});
+      {this.id, this.name, this.noteList, this.updateTime, this.userID});
 
   NotebookModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
-    create_time = json['create_time'];
-    update_time = json['create_time'];
-    user_id = json['user_id'];
-    if (json['note_list'] != null) {
-      note_list = <String>[];
-      json['note_list'].forEach((v) {
-        note_list.add(v);
+    updateTime = json['updateTime'];
+    userID = json['userID'];
+    if (json['noteList'] != null) {
+      noteList = <String>[];
+      json['noteList'].forEach((v) {
+        noteList.add(v);
       });
     }
   }
@@ -32,12 +27,19 @@ class NotebookModel {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
     data['name'] = this.name;
-    data['create_time'] = this.create_time;
-    data['update_time'] = this.update_time;
-    data['user_id'] = this.user_id;
-    if (this.note_list != null) {
-      data['note_list'] = this.note_list;
+    data['updateTime'] = this.updateTime;
+    data['userID'] = this.userID;
+    if (this.noteList != null) {
+      data['noteList'] = this.noteList;
     }
     return data;
+  }
+
+  // 创建一个笔记模型
+  static NotebookModel createNote(String name) {
+    var notebook = NotebookModel();
+    notebook.name = name;
+    notebook.id = Uuid().v1();
+    return notebook;
   }
 }
