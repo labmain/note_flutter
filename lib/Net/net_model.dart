@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:note_flutter/Model/note_model.dart';
 import 'package:note_flutter/Model/notebook_model.dart';
+import 'package:note_flutter/Model/user_model.dart';
 import 'json_convert_content.dart';
 import 'net_utils.dart';
 import 'package:dio/dio.dart';
@@ -50,5 +51,30 @@ class SystemNetUtils {
     ResponseResult result =
         await NetUtils.instance.post("$iPString/note", body: note.toJson());
     return result.state == ResponseResultType.success;
+  }
+
+  /// 创建一个用户
+  static Future<User> registerUser(
+      String name, String password, String confirmPassword) async {
+    ResponseResult<User> result = await NetUtils.instance
+        .post<User>("$iPString/users", body: {
+      "name": name,
+      "password": password,
+      "confirmPassword": confirmPassword
+    });
+    return result.result;
+  }
+
+  /// 登录
+  static Future<User> login(String name, String password) async {
+    // 基本加密 base64
+    var str = name + ":" + password;
+    var bytes = utf8.encode(str);
+    var encoded1 = base64Encode(bytes);
+
+    ResponseResult<User> result = await NetUtils.instance.post<User>(
+        "$iPString/login",
+        header: {"Authorization": "Basic " + encoded1});
+    return result.result;
   }
 }

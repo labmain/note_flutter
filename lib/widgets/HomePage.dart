@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:note_flutter/Manager/UserTools.dart';
 import 'package:note_flutter/Model/notebook_model.dart';
 import 'package:note_flutter/Net/net_model.dart';
 import 'package:note_flutter/Routers/Routers.dart';
@@ -60,13 +62,32 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void checkUserState() async {
+    var user = await UserTools.instance.getUser();
+    if (user.token == null) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushNamed(Routers.login);
+      });
+    } else {
+      _getNotebookList();
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _getNotebookList();
+    checkUserState();
     _controller.addListener(() {
       _valueListenable.value = "";
+    });
+  }
+
+  /// 退出登录
+  void _logout() {
+    UserTools.instance.clearUser();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      Navigator.of(context).pushNamed(Routers.login);
     });
   }
 
@@ -130,13 +151,13 @@ class _HomePageState extends State<HomePage> {
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
-          children: const <Widget>[
+          children: <Widget>[
             DrawerHeader(
               decoration: BoxDecoration(
                 color: Colors.deepPurple,
               ),
               child: Text(
-                'Drawer Header',
+                '用户信息',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 24,
@@ -144,16 +165,17 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.message),
-              title: Text('Messages'),
+              leading: Icon(Icons.restore_from_trash_rounded),
+              title: Text('回收站'),
             ),
             ListTile(
-              leading: Icon(Icons.account_circle),
-              title: Text('Profile'),
+              leading: Icon(Icons.people),
+              title: Text(UserTools.instance.currentUser.name),
             ),
             ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'),
+              leading: Icon(Icons.logout),
+              title: Text('退出登录'),
+              onTap: _logout,
             ),
           ],
         ),

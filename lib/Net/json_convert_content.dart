@@ -6,6 +6,7 @@
 
 import 'package:note_flutter/Model/note_model.dart';
 import 'package:note_flutter/Model/notebook_model.dart';
+import 'package:note_flutter/Model/user_model.dart';
 
 class JsonConvert<T> {
   T fromJson(Map<String, dynamic> json) {
@@ -54,10 +55,10 @@ class JsonConvert<T> {
     switch (M) {
       case NotebookModel:
         return NotebookModel.fromJson(json) as M;
-        return json;
       case NoteModel:
         return NoteModel.fromJson(json) as M;
-        return json;
+      case User:
+        return User.fromJson(json) as M;
     }
 
     return json;

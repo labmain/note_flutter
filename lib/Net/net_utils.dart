@@ -264,6 +264,7 @@ class NetUtils {
     // options.headers.addAll(
     //   new Map<String, String>.from(headerParams),
     // );
+    options.headers = headerParams;
     return options;
   }
 }

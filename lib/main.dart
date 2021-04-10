@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
       ),
-      initialRoute: Routers.login,
+      initialRoute: Routers.root,
       routes: Routers.routers,
     );
   }

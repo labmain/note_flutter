@@ -1,89 +1,54 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:note_flutter/Manager/UserTools.dart';
+import 'package:note_flutter/Model/user_model.dart';
 import 'package:note_flutter/Net/net_model.dart';
-import 'package:note_flutter/Routers/Routers.dart';
 import 'package:note_flutter/resources/image_resource.dart';
 import 'package:note_flutter/utils/ui_utils.dart';
-import 'package:note_flutter/widgets/HomePage.dart';
 
-class LoginPage extends StatefulWidget {
+class SignUpPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _LoginState();
 }
 
-class _LoginState extends State<LoginPage> {
+class _LoginState extends State<SignUpPage> {
   static final GlobalKey<ScaffoldState> _scaffoldKey =
       GlobalKey<ScaffoldState>();
 
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
-  bool _correctPhone = true;
-  bool _correctPassword = true;
-
-  bool showProgress = false;
+  bool _hidePassword1 = true;
+  bool _hidePassword2 = true;
 
   void _checkInput() {
     if (_phoneController.text.isNotEmpty) {
-      _correctPhone = true;
-    } else {
-      _correctPhone = false;
-    }
+    } else {}
     if (_passwordController.text.isNotEmpty) {
-      _correctPassword = true;
-    } else {
-      _correctPassword = false;
-    }
+    } else {}
     setState(() {});
   }
 
-  //跳转登录
-  _onTabGoToLogin() async {
-    _checkInput();
-    if (!_correctPassword || !_correctPhone) {
-      return;
-    }
+  // 注册
+  _onTabGoToRegister() async {
+    var name = _phoneController.text;
+    var password = _passwordController.text;
+    var confirmPassword = _confirmPasswordController.text;
 
-    var result = await SystemNetUtils.login(
-        _phoneController.text, _passwordController.text);
-    if (result.token != null) {
-      print(result.token);
-      var isFinish = await UserTools.instance.saveUser(result);
-      if (!isFinish) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("登录失败！")));
-        return;
-      }
+    // var user = User();
+    // user.name = name;
+
+    var result =
+        await SystemNetUtils.registerUser(name, password, confirmPassword);
+    if (!result.id.isEmpty) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("登录成功！")));
-      Future.delayed(Duration.zero, () {
-        Navigator.pushAndRemoveUntil(
-          context,
-          new MaterialPageRoute(builder: (context) => new HomePage()),
-          (route) => route == null,
-        );
-      });
+          .showSnackBar(SnackBar(content: Text("注册成功！")));
+      Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("登录失败！")));
+          .showSnackBar(SnackBar(content: Text("注册失败！")));
     }
-  }
-
-  // 注册
-  _onTabGoToRegister() {
-    Navigator.of(context).pushNamed(Routers.signup);
-    print("注册拉！");
-  }
-
-  //跳转试用入口
-  _onTabGoToTrial() {
-    debugPrint("跳转试用入口");
-  }
-
-  //跳转试用入口
-  _onTabGoToIntroduce() {
-    debugPrint("跳转购买咨询");
   }
 
   @override
@@ -221,7 +186,7 @@ class _LoginState extends State<LoginPage> {
                         ? 800 * 0.02
                         : Utils.screenHeight * 0.02),
                 child: Text(
-                  'Welcom!',
+                  '注册',
                   style: TextStyle(color: Color(0xff222222), fontSize: 26),
                 ),
               ),
@@ -236,7 +201,7 @@ class _LoginState extends State<LoginPage> {
                 decoration: InputDecoration(
                   hintText: '请输入用户名',
                   hintStyle: TextStyle(color: Color(0xffcccccc)),
-                  errorText: _correctPhone ? null : '用户名不可为空！',
+                  errorText: null,
                   errorStyle: TextStyle(color: Colors.teal),
                   prefixIcon: Padding(
                     padding: const EdgeInsetsDirectional.only(end: 12.0),
@@ -255,17 +220,56 @@ class _LoginState extends State<LoginPage> {
                 style: TextStyle(color: Colors.black),
                 // cursorColor: mainColor,
                 controller: _passwordController,
-                obscureText: true,
+                obscureText: _hidePassword1,
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
                   // contentPadding: EdgeInsets.only(bottom: 20),
                   suffixIcon: IconButton(
-                    icon:
-                        Image.asset(ImageName.login.png("login_icon_psd_show")),
+                    icon: Image.asset(ImageName.login.png(_hidePassword1
+                        ? "login_icon_psd_show"
+                        : "login_icon_psd_hide")),
+                    onPressed: () {
+                      _hidePassword1 = !_hidePassword1;
+                      setState(() {});
+                    },
                   ),
                   hintText: '请输入密码',
                   // hintStyle: TextStyle(color: hitColor),
-                  errorText: _correctPassword ? null : '密码不可为空！',
+                  errorText: null,
+                  errorStyle: TextStyle(color: Colors.teal),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 12.0),
+                    child: Icon(Icons.lock),
+                  ),
+                ),
+                onSubmitted: (value) {
+                  _checkInput();
+                },
+              ),
+            ),
+            Container(
+              // 密码输入框
+              padding: const EdgeInsets.all(32.0),
+              child: TextField(
+                style: TextStyle(color: Colors.black),
+                // cursorColor: mainColor,
+                controller: _confirmPasswordController,
+                obscureText: _hidePassword2,
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  // contentPadding: EdgeInsets.only(bottom: 20),
+                  suffixIcon: IconButton(
+                    icon: Image.asset(ImageName.login.png(_hidePassword2
+                        ? "login_icon_psd_show"
+                        : "login_icon_psd_hide")),
+                    onPressed: () {
+                      _hidePassword2 = !_hidePassword2;
+                      setState(() {});
+                    },
+                  ),
+                  hintText: '请确认密码',
+                  // hintStyle: TextStyle(color: hitColor),
+                  errorText: null,
                   errorStyle: TextStyle(color: Colors.teal),
                   prefixIcon: Padding(
                     padding: const EdgeInsetsDirectional.only(end: 12.0),
@@ -293,34 +297,16 @@ class _LoginState extends State<LoginPage> {
                             child: Container(
                                 margin: const EdgeInsets.all(12.0),
                                 child: Text(
-                                  "登录",
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 16),
-                                )),
-                            onPressed: _onTabGoToLogin,
-                          ),
-                          color: Color(0xFF3A63FB),
-                          borderRadius: BorderRadius.circular(20.0),
-                          elevation: 5.0,
-                        )),
-                    Padding(padding: EdgeInsets.only(left: 32)),
-                    Expanded(
-                        flex: 1,
-                        child: Material(
-                          child: TextButton(
-                            child: Container(
-                                margin: const EdgeInsets.all(12.0),
-                                child: Text(
                                   "注册",
                                   style: TextStyle(
                                       color: Colors.white, fontSize: 16),
                                 )),
                             onPressed: _onTabGoToRegister,
                           ),
-                          color: Colors.grey,
+                          color: Color(0xFF3A63FB),
                           borderRadius: BorderRadius.circular(20.0),
                           elevation: 5.0,
-                        ))
+                        )),
                   ],
                 ),
               ),
