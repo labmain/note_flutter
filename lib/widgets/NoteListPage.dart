@@ -6,10 +6,9 @@ import 'package:note_flutter/Routers/Routers.dart';
 import 'package:note_flutter/widgets/NoteEditPage.dart';
 
 class NoteListPage extends StatefulWidget {
-  NotebookModel notebook;
-  NoteListPage({Key key, @required this.notebook, this.title})
+ NotebookModel notebook;
+  NoteListPage({Key? key, required this.notebook})
       : super(key: key);
-  final String title;
 
   @override
   _NoteListPageState createState() => _NoteListPageState();
@@ -27,7 +26,7 @@ class _NoteListPageState extends State<NoteListPage> {
     try {
       // 获取笔记本列表
       notes =
-          await SystemNetUtils.getAllNoteList(notebookID: widget.notebook.id);
+          await SystemNetUtils.getAllNoteList(widget.notebook.id);
       // 刷新ui
       setState(() {});
     } catch (e) {
@@ -50,58 +49,87 @@ class _NoteListPageState extends State<NoteListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("笔记列表"),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-      ),
-      body: Scrollbar(
-        child: ListView(
-          restorationId: 'list_demo_list_view',
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          children: [
-            for (int index = 0; index < notes.length; index++)
-              ListTile(
-                leading: ExcludeSemantics(
-                  child: CircleAvatar(child: Text("$index")),
-                ),
-                title: Text(notes[index].title),
-                subtitle: showUpdateTime(notes[index].updateTime),
-                onTap: () {
-                  Navigator.of(context)
-                      .push(new MaterialPageRoute(builder: (_) {
-                    return NoteEditPage(widget.notebook, notes[index]);
-                  })).then<bool>((isRefresh) {
-                    var r = isRefresh as bool;
-                    if (r) {
-                      _getNotebookList();
-                    }
-                  });
-                },
-              ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(new MaterialPageRoute(builder: (_) {
-            return NoteEditPage(
-                widget.notebook, NoteModel.createNote(widget.notebook.id));
-          })).then<bool>((isRefresh) {
-            var r = isRefresh as bool;
-            if (r) {
-              _getNotebookList();
-            }
-          });
-        },
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    // TODO: implement build
+    return ListView(
+      restorationId: 'list_demo_list_view',
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      children: [
+        for (int index = 0; index < notes.length; index++)
+          ListTile(
+            leading: ExcludeSemantics(
+              child: Icon(Icons.notes),
+            ),
+            title: Text(notes[index].title),
+            subtitle: showUpdateTime(notes[index].updateTime ?? 0.0),
+            onTap: () {
+              Navigator.of(context).push(new MaterialPageRoute(builder: (_) {
+                return NoteEditPage(widget.notebook, notes[index]);
+              })).then((isRefresh) {
+                var r = isRefresh as bool;
+                if (r) {
+                  _getNotebookList();
+                }
+              });
+            },
+          ),
+      ],
     );
   }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     appBar: AppBar(
+  //       title: Text("笔记列表"),
+  //       leading: IconButton(
+  //         icon: Icon(Icons.arrow_back),
+  //         onPressed: () {
+  //           Navigator.of(context).pop();
+  //         },
+  //       ),
+  //     ),
+  //     body: Scrollbar(
+  //       child: ListView(
+  //         restorationId: 'list_demo_list_view',
+  //         padding: const EdgeInsets.symmetric(vertical: 8),
+  //         children: [
+  //           for (int index = 0; index < notes.length; index++)
+  //             ListTile(
+  //               leading: ExcludeSemantics(
+  //                 child: Icon(Icons.notes),
+  //               ),
+  //               title: Text(notes[index].title),
+  //               subtitle: showUpdateTime(notes[index].updateTime),
+  //               onTap: () {
+  //                 Navigator.of(context)
+  //                     .push(new MaterialPageRoute(builder: (_) {
+  //                   return NoteEditPage(widget.notebook, notes[index]);
+  //                 })).then<bool>((isRefresh) {
+  //                   var r = isRefresh as bool;
+  //                   if (r) {
+  //                     _getNotebookList();
+  //                   }
+  //                 });
+  //               },
+  //             ),
+  //         ],
+  //       ),
+  //     ),
+  //     floatingActionButton: FloatingActionButton(
+  //       onPressed: () {
+  //         Navigator.of(context).push(new MaterialPageRoute(builder: (_) {
+  //           return NoteEditPage(
+  //               widget.notebook, NoteModel.createNote(widget.notebook.id));
+  //         })).then<bool>((isRefresh) {
+  //           var r = isRefresh as bool;
+  //           if (r) {
+  //             _getNotebookList();
+  //           }
+  //         });
+  //       },
+  //       tooltip: 'Increment',
+  //       child: Icon(Icons.add),
+  //     ), // This trailing comma makes auto-formatting nicer for build methods.
+  //   );
+  // }
 }

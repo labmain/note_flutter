@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '云笔记',
-      theme: ThemeData(
+      theme: ThemeData(/**/
         primarySwatch: Colors.deepPurple,
       ),
       initialRoute: Routers.root,

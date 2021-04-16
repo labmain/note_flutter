@@ -15,14 +15,14 @@ class SystemNetUtils {
   static Future<List<NotebookModel>> requestNodeBookList() async {
     ResponseResult<NotebookModel> result =
         await NetUtils.instance.get<NotebookModel>('$iPString/notebook');
-    return result.list;
+    return result.list ?? [];
   }
 
   static Future<bool> checkNotebookName(String name) async {
     ResponseResult<Map<String, dynamic>> result = await NetUtils.instance
         .get<Map<String, dynamic>>("$iPString/notebook/check",
             params: {"name": name});
-    return result.result["isHas"] == "1";
+    return result.result?["isHas"] == "1";
   }
 
   /// 创建一本笔记
@@ -33,10 +33,10 @@ class SystemNetUtils {
   }
 
   /// 返回所有的笔记列表
-  static Future<List<NoteModel>> getAllNoteList({String notebookID}) async {
+  static Future<List<NoteModel>> getAllNoteList(String notebookID) async {
     ResponseResult<NoteModel> result = await NetUtils.instance
         .get<NoteModel>('$iPString/note', params: {"id": notebookID});
-    return result.list;
+    return result.list ?? [];
   }
 
   /// 删除一个笔记
@@ -54,7 +54,7 @@ class SystemNetUtils {
   }
 
   /// 创建一个用户
-  static Future<User> registerUser(
+  static Future<User?> registerUser(
       String name, String password, String confirmPassword) async {
     ResponseResult<User> result = await NetUtils.instance
         .post<User>("$iPString/users", body: {
@@ -66,7 +66,7 @@ class SystemNetUtils {
   }
 
   /// 登录
-  static Future<User> login(String name, String password) async {
+  static Future<User?> login(String name, String password) async {
     // 基本加密 base64
     var str = name + ":" + password;
     var bytes = utf8.encode(str);

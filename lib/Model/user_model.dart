@@ -1,15 +1,14 @@
 class User {
   /// 用户id
-  String id;
+  String id = "0";
 
   /// 用户名称
-  String name;
+  String name = "临时用户";
 
   /// 登录成功之后的token
-  String token;
+  String? token;
 
-  User({this.id, this.name});
-
+  User();
   User.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];

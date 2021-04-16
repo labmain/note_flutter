@@ -1,20 +1,28 @@
+import 'package:note_flutter/Manager/UserTools.dart';
 import 'package:uuid/uuid.dart';
 
 class NotebookModel {
-  String id;
-  String name;
-  List<String> noteList;
-  double updateTime;
-  String userID;
+  late String id;
+  late String name;
+  List<String> noteList = [];
+  double? updateTime;
+  late String userID;
 
   NotebookModel(
-      {this.id, this.name, this.noteList, this.updateTime, this.userID});
+      {required this.id,
+      required this.name,
+      this.updateTime,
+      required this.userID});
 
   NotebookModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
     updateTime = json['updateTime'];
-    userID = json['userID'];
+    if ( json['userID'] == null) {
+      userID = "0";
+    } else {
+      userID = json['userID'];
+    }
     if (json['noteList'] != null) {
       noteList = <String>[];
       json['noteList'].forEach((v) {
@@ -37,9 +45,8 @@ class NotebookModel {
 
   // 创建一个笔记模型
   static NotebookModel createNote(String name) {
-    var notebook = NotebookModel();
-    notebook.name = name;
-    notebook.id = Uuid().v1();
+    var notebook = NotebookModel(
+        id: Uuid().v1(), name: name, userID: UserTools.instance.currentUser.id);
     return notebook;
   }
 }

@@ -16,13 +16,12 @@ enum ResponseResultType {
 
 /// 请求结果
 class ResponseResult<T> {
-  ResponseResultType state;
-  int stateID = -1;
-  List<T> list;
-  // Map<String, T> map;
-  T result;
-  dynamic any;
-  Error error;
+  ResponseResultType state = ResponseResultType.unKnow;
+  int? stateID;
+  List<T>? list ;
+  T? result;
+  dynamic? any;
+  Error? error;
 
   ResponseResult<T> checkResponse(Response re) {
     ResponseResult<T> result = ResponseResult();
@@ -46,8 +45,8 @@ class ResponseResult<T> {
     return result;
   }
 
-  ResponseResult createWithError<T>(DioError dioError) {
-    ResponseResult result = ResponseResult();
+  ResponseResult<T> createWithError<T>(DioError dioError) {
+    ResponseResult<T> result = ResponseResult();
     // 超时
     if (dioError.type == DioErrorType.connectTimeout) {}
     if (dioError.type == DioErrorType.other) {}
@@ -56,7 +55,7 @@ class ResponseResult<T> {
     // debug模式才打印
     if (!kReleaseMode) {
       print('请求异常: ' + dioError.toString());
-      print('请求异常url: ' + dioError.response.realUri.toString());
+      print('请求异常url: ' + (dioError.response?.realUri.toString() ?? ""));
     }
     return result;
   }
@@ -79,7 +78,7 @@ class NetUtils {
     return _singleton;
   }
 
-  static Dio _dio;
+  static late Dio _dio;
 
   Dio getDio() {
     return _dio;
@@ -117,13 +116,12 @@ class NetUtils {
   Future _request<T>(
     String method,
     String url, {
-    String version,
-    Map<String, dynamic> body,
-    Map<String, dynamic> header,
-    Map<String, dynamic> params,
-    Function(ResponseResult<T> result) finished,
+    Map<String, dynamic>? body,
+    Map<String, dynamic>? header,
+    Map<String, dynamic>? params,
+    Function(ResponseResult<T> result)? finished,
   }) async {
-    Response response;
+   late Response response;
     try {
       switch (method) {
         case NET_GET:
@@ -132,7 +130,6 @@ class NetUtils {
             url,
             NET_GET,
             body,
-            version,
           );
           response = await _dio.get(
             url,
@@ -146,7 +143,6 @@ class NetUtils {
             url,
             NET_POST,
             body,
-            version,
           );
           response = await _dio.post(
             url,
@@ -160,7 +156,6 @@ class NetUtils {
             url,
             NET_DELETE,
             body,
-            version,
           );
           response = await _dio.delete(
             url,
@@ -174,7 +169,8 @@ class NetUtils {
       return result;
     } on DioError catch (dioError) {
       // 请求错误处理
-      ResponseResult result = ResponseResult().createWithError<T>(dioError);
+      ResponseResult<T> result = ResponseResult<T>().createWithError<T>
+        (dioError);
       finished?.call(result);
       return result;
     }
@@ -183,15 +179,13 @@ class NetUtils {
   /// 主动发起请求 get
   Future get<T>(
     String url, {
-    String version,
-    Map<String, dynamic> header,
-    Map<String, dynamic> params,
-    Function(ResponseResult<T> result) finished,
+    Map<String, dynamic>? header,
+    Map<String, dynamic>? params,
+    Function(ResponseResult<T> result)? finished,
   }) {
     return _request<T>(
       NET_GET,
       url,
-      version: version,
       header: header,
       params: params,
       finished: finished,
@@ -201,16 +195,14 @@ class NetUtils {
   /// 主动发起请求 post
   Future post<T>(
     String url, {
-    String version,
-    Map<String, dynamic> body,
-    Map<String, dynamic> header,
-    Map<String, dynamic> params,
-    Function(ResponseResult<T> result) finished,
+    Map<String, dynamic>? body,
+    Map<String, dynamic>? header,
+    Map<String, dynamic>? params,
+    Function(ResponseResult<T> result)? finished,
   }) {
     return _request<T>(
       NET_POST,
       url,
-      version: version,
       body: body,
       header: header,
       params: params,
@@ -221,16 +213,14 @@ class NetUtils {
   /// 主动发起请求 post
   Future del<T>(
     String url, {
-    String version,
-    Map<String, dynamic> body,
-    Map<String, dynamic> header,
-    Map<String, dynamic> params,
-    Function(ResponseResult<T> result) finished,
+    Map<String, dynamic>? body,
+    Map<String, dynamic>? header,
+    Map<String, dynamic>? params,
+    Function(ResponseResult<T> result)? finished,
   }) {
     return _request<T>(
       NET_DELETE,
       url,
-      version: version,
       body: body,
       header: header,
       params: params,
@@ -240,11 +230,10 @@ class NetUtils {
 
   // header 参数
   Options requestBaseHeader(
-    Map<String, dynamic> headerParams,
+    Map<String, dynamic>? headerParams,
     String url,
     String method,
-    Map<String, dynamic> body,
-    String version,
+    Map<String, dynamic>? body,
   ) {
     Options options = Options();
     if (headerParams == null) {
@@ -256,7 +245,8 @@ class NetUtils {
     // headerParams["Access-Control-Allow-Methods"] =
     //     "GET, POST, PATCH, PUT, DELETE, OPTIONS";
     // headerParams["Access-Control-Allow-Headers"] =
-    //     "Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-CSRF-TOKEN, X-Requested-With";
+    //     "Authorization, Content-Type, If-Match, If-Modified-Since,
+    //     If-None-Match, If-Unmodified-Since, X-CSRF-TOKEN, X-Requested-With";
     // headerParams["Origin"] = "39.105.178.125";
     // headerParams[]
     // headerParams["Access-Control-Expose-Headers"] = "*";

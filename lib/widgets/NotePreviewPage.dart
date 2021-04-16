@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 class NotePreviewPage extends StatefulWidget {
-  // 声明一个成员变量来保存 Todo 对象 (Declare a field that holds the Todo)
+  // 声明一个成员变量来保存
   final String markdownData;
 
-  // 构造函数需要 Todo 对象 (In the constructor, require a Todo)
-  NotePreviewPage({Key key, @required this.markdownData, this.title})
+  // 构造函数需要
+  NotePreviewPage({Key? key, required this.markdownData})
       : super(key: key);
-  final String title;
 
   @override
   _NotePreviewPageState createState() => _NotePreviewPageState();

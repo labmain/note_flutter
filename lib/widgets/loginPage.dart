@@ -47,7 +47,7 @@ class _LoginState extends State<LoginPage> {
 
     var result = await SystemNetUtils.login(
         _phoneController.text, _passwordController.text);
-    if (result.token != null) {
+    if (result != null && result.token != null) {
       print(result.token);
       var isFinish = await UserTools.instance.saveUser(result);
       if (!isFinish) {
@@ -166,7 +166,8 @@ class _LoginState extends State<LoginPage> {
         Padding(padding: EdgeInsets.only(top: 20)),
         Center(
           child: Container(
-            width: Utils.screenWidth * 0.8,
+            width:
+                Utils.screenWidth * 0.8 > 400 ? 400 : Utils.screenWidth * 0.8,
             height:
                 Utils.screenHeight < 800 ? 800 * 0.7 : Utils.screenHeight * 0.7,
             // padding: const EdgeInsets.all(50),
@@ -179,23 +180,7 @@ class _LoginState extends State<LoginPage> {
                     blurRadius: 2.0,
                   ),
                 ]),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround, // 平分
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: MediaQuery.of(context).size.width > 800
-                  ? [
-                      getLoginInputWidget(),
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          // color: Colors.blue,
-                          padding: EdgeInsets.all(5.0),
-                          child: Center(child: Icon(Icons.message)),
-                        ),
-                      ),
-                    ]
-                  : [getLoginInputWidget()],
-            ),
+            child: getLoginInputWidget(),
           ),
         ),
         Padding(padding: EdgeInsets.only(top: 20)),
@@ -261,7 +246,7 @@ class _LoginState extends State<LoginPage> {
                   // contentPadding: EdgeInsets.only(bottom: 20),
                   suffixIcon: IconButton(
                     icon:
-                        Image.asset(ImageName.login.png("login_icon_psd_show")),
+                        Image.asset(ImageName.login.png("login_icon_psd_show")), onPressed: () {  },
                   ),
                   hintText: '请输入密码',
                   // hintStyle: TextStyle(color: hitColor),

@@ -5,12 +5,12 @@ import 'package:note_flutter/Net/net_model.dart';
 import 'package:note_flutter/resources/image_resource.dart';
 import 'package:note_flutter/utils/ui_utils.dart';
 
-class SignUpPage extends StatefulWidget {
+class ChangePasswordPage extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => _LoginState();
+  State<StatefulWidget> createState() => _ChangePasswordState();
 }
 
-class _LoginState extends State<SignUpPage> {
+class _ChangePasswordState extends State<ChangePasswordPage> {
   static final GlobalKey<ScaffoldState> _scaffoldKey =
       GlobalKey<ScaffoldState>();
 
@@ -41,7 +41,7 @@ class _LoginState extends State<SignUpPage> {
 
     var result =
         await SystemNetUtils.registerUser(name, password, confirmPassword);
-    if (result != null && result.id.isNotEmpty) {
+    if (result != null && result.id.isEmpty) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("注册成功！")));
       Navigator.of(context).pop();
@@ -171,7 +171,7 @@ class _LoginState extends State<SignUpPage> {
                         ? 800 * 0.02
                         : Utils.screenHeight * 0.02),
                 child: Text(
-                  '注册',
+                  '修改密码',
                   style: TextStyle(color: Color(0xff222222), fontSize: 26),
                 ),
               ),
@@ -184,7 +184,7 @@ class _LoginState extends State<SignUpPage> {
                 controller: _phoneController,
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
-                  hintText: '请输入用户名',
+                  hintText: '请输入原密码',
                   hintStyle: TextStyle(color: Color(0xffcccccc)),
                   errorText: null,
                   errorStyle: TextStyle(color: Colors.teal),
@@ -218,7 +218,7 @@ class _LoginState extends State<SignUpPage> {
                       setState(() {});
                     },
                   ),
-                  hintText: '请输入密码',
+                  hintText: '请输入新密码',
                   // hintStyle: TextStyle(color: hitColor),
                   errorText: null,
                   errorStyle: TextStyle(color: Colors.teal),
@@ -252,7 +252,7 @@ class _LoginState extends State<SignUpPage> {
                       setState(() {});
                     },
                   ),
-                  hintText: '请确认密码',
+                  hintText: '请确认新密码',
                   // hintStyle: TextStyle(color: hitColor),
                   errorText: null,
                   errorStyle: TextStyle(color: Colors.teal),
@@ -282,16 +282,36 @@ class _LoginState extends State<SignUpPage> {
                             child: Container(
                                 margin: const EdgeInsets.all(12.0),
                                 child: Text(
-                                  "注册",
+                                  "确定",
                                   style: TextStyle(
                                       color: Colors.white, fontSize: 16),
                                 )),
-                            onPressed: _onTabGoToRegister,
+                            onPressed: () {},
                           ),
                           color: Color(0xFF3A63FB),
                           borderRadius: BorderRadius.circular(20.0),
                           elevation: 5.0,
                         )),
+                    Padding(padding: EdgeInsets.only(left: 32)),
+                    Expanded(
+                        flex: 1,
+                        child: Material(
+                          child: TextButton(
+                            child: Container(
+                                margin: const EdgeInsets.all(12.0),
+                                child: Text(
+                                  "取消",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 16),
+                                )),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          color: Color(0xFF3A63FB),
+                          borderRadius: BorderRadius.circular(20.0),
+                          elevation: 5.0,
+                        ))
                   ],
                 ),
               ),

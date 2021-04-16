@@ -1,3 +1,4 @@
+import 'package:note_flutter/widgets/ChangePasswordPage.dart';
 import 'package:note_flutter/widgets/HomePage.dart';
 import 'package:note_flutter/widgets/NoteEditPage.dart';
 import 'package:note_flutter/widgets/NotePreviewPage.dart';
@@ -10,13 +11,14 @@ class Routers {
   static String previewNode = "/previewNode";
   static String login = "/login";
   static String signup = "/signup";
+  static String changePassword = "/changePassword";
   static final routers = {
     //登录页面
     login: (context) => LoginPage(),
     signup: (context) => SignUpPage(),
+    changePassword: (context) => ChangePasswordPage(),
     // 首页
     root: (context) => HomePage(
-          title: "标题",
         ),
     // 编辑
     // editNote: (context) => NoteEditPage(),

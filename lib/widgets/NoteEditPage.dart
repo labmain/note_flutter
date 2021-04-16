@@ -8,7 +8,8 @@ import 'NotePreviewPage.dart';
 class NoteEditPage extends StatefulWidget {
   NotebookModel notebookModel;
   NoteModel noteModel;
-  NoteEditPage(this.notebookModel, this.noteModel, {Key key}) : super(key: key);
+  NoteEditPage(this.notebookModel, this.noteModel, {Key? key}) : super(key:
+  key);
 
   @override
   _NoteEditPageState createState() => new _NoteEditPageState();
@@ -44,7 +45,118 @@ class _NoteEditPageState extends State<NoteEditPage> {
     }
   }
 
-  void _deleteNote() {}
+  void _deleteNote() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("警告"),
+            content: Text("确认删除改笔记吗？"),
+            actions: <Widget>[
+              TextButton(
+                child: Text("确定"),
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text("取消"),
+                onPressed: () {
+                  isChange = true;
+                  Navigator.of(context).pop(true);
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  /// 退出逻辑
+  void _backAction() {
+    if (widget.noteModel.content != _controller.text) {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("提示"),
+              content: Text("发现有未保存的内容!"),
+              actions: <Widget>[
+                TextButton(
+                  child: Text("离开"),
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: Text("再想想"),
+                  onPressed: () {
+                    isChange = true;
+                    Navigator.of(context).pop(true);
+                  },
+                ),
+              ],
+            );
+          });
+    } else {
+      Navigator.of(context).pop(isChange);
+    }
+  }
+
+  _deleteAction() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("提示"),
+            content: Text("您确定要删除当前文件吗?"),
+            actions: <Widget>[
+              TextButton(
+                child: Text("取消"),
+                onPressed: () => {Navigator.of(context).pop('cancel')},
+              ),
+              TextButton(
+                child: Text("删除"),
+                onPressed: () {
+                  isChange = true;
+                  Navigator.of(context).pop(true);
+                  // 执行删除操作
+                  SystemNetUtils.deleteNote(widget.noteModel.id).then((isOK) {
+                    Navigator.of(context).pop(true);
+                    if (isOK) {
+                      print("删除成功");
+                    } else {
+                      print("删除失败！");
+                    }
+                  });
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  List<Widget> _barTools() {
+    return [
+      IconButton(
+        icon: Icon(Icons.preview),
+        onPressed: () {
+          Navigator.of(context).push(new MaterialPageRoute(builder: (_) {
+            return new NotePreviewPage(markdownData: _controller.text);
+          }));
+        },
+      ),
+      IconButton(
+        icon: Icon(Icons.delete),
+        onPressed: _deleteAction,
+      ),
+      IconButton(
+        icon: Icon(Icons.save),
+        onPressed: _saveContent,
+      )
+    ];
+  }
 
   @override
   void initState() {
@@ -57,109 +169,45 @@ class _NoteEditPageState extends State<NoteEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    _controller.text = widget.noteModel.content;
+    _controller.text = widget.noteModel.content ?? "";
     return Scaffold(
       appBar: AppBar(
         title: Text("编辑页面"),
-        leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
-              if (widget.noteModel.content != _controller.text) {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text("提示"),
-                        content: Text("发现有未保存的内容!"),
-                        actions: <Widget>[
-                          TextButton(
-                            child: Text("离开"),
-                            onPressed: () {
-                              Navigator.of(context).pop(true);
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                          TextButton(
-                            child: Text("再想想"),
-                            onPressed: () {
-                              isChange = true;
-                              Navigator.of(context).pop(true);
-                            },
-                          ),
-                        ],
-                      );
-                    });
-              } else {
-                Navigator.of(context).pop(isChange);
-              }
-            }),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.preview),
-            onPressed: () {
-              Navigator.of(context).push(new MaterialPageRoute(builder: (_) {
-                return new NotePreviewPage(markdownData: _controller.text);
-              }));
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: Text("提示"),
-                      content: Text("您确定要删除当前文件吗?"),
-                      actions: <Widget>[
-                        TextButton(
-                          child: Text("取消"),
-                          onPressed: () =>
-                              {Navigator.of(context).pop('cancel')},
-                        ),
-                        TextButton(
-                          child: Text("删除"),
-                          onPressed: () {
-                            isChange = true;
-                            Navigator.of(context).pop(true);
-                            // 执行删除操作
-                            SystemNetUtils.deleteNote(widget.noteModel.id)
-                                .then((isOK) {
-                              Navigator.of(context).pop(true);
-                              if (isOK) {
-                                print("删除成功");
-                              } else {
-                                print("删除失败！");
-                              }
-                            });
-                          },
-                        ),
-                      ],
-                    );
-                  });
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.save),
-            onPressed: _saveContent,
-          )
-        ],
+        leading:
+            IconButton(icon: Icon(Icons.arrow_back), onPressed: _backAction),
+        actions: _barTools(),
       ),
-      body: Container(
-        color: Colors.grey,
-        height: double.infinity,
-        margin: EdgeInsets.all(32),
-        child: TextField(
-          controller: _controller,
-          autofocus: true,
-          scrollPadding: EdgeInsets.all(8),
-          maxLines: null,
-          decoration: InputDecoration(
-            hintText: "请输入内容",
-            border: InputBorder.none,
-            filled: true,
-            // fillColor: Colors.red,
-          ),
+      body: NoteEditWidget(content: '',),
+    );
+  }
+}
+
+class NoteEditWidget extends StatefulWidget {
+  final TextEditingController controller = new TextEditingController();
+  var content = "";
+  NoteEditWidget({required this.content, Key? key}) : super(key: key);
+  @override
+  _NoteEditWidgetState createState() => new _NoteEditWidgetState();
+}
+
+class _NoteEditWidgetState extends State<NoteEditWidget> {
+  @override
+  Widget build(BuildContext context) {
+    widget.controller.text = widget.content;
+    return Container(
+      color: Colors.white,
+      height: double.infinity,
+      // margin: EdgeInsets.all(32),
+      child: TextField(
+        controller: widget.controller,
+        autofocus: true,
+        scrollPadding: EdgeInsets.all(8),
+        maxLines: null,
+        decoration: InputDecoration(
+          hintText: "请输入内容",
+          border: InputBorder.none,
+          filled: true,
+          // fillColor: Colors.red,
         ),
       ),
     );
