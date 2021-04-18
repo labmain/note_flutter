@@ -9,6 +9,7 @@ import 'package:note_flutter/Manager/UserTools.dart';
 import 'package:note_flutter/Model/note_model.dart';
 import 'package:note_flutter/Model/notebook_model.dart';
 import 'package:note_flutter/Net/net_model.dart';
+import 'package:note_flutter/Net/net_utils.dart';
 import 'package:note_flutter/Routers/Routers.dart';
 import 'package:note_flutter/widgets/ChangePasswordPage.dart';
 import 'package:note_flutter/widgets/NoteEditPage.dart';
@@ -16,7 +17,6 @@ import 'package:note_flutter/widgets/NoteListPage.dart';
 import 'package:note_flutter/widgets/notebook_list_widget.dart';
 
 import 'note_list_widget.dart';
-
 
 class HomePage extends StatefulWidget {
   @override
@@ -29,29 +29,37 @@ class _HomePageState extends State<HomePage> {
 
   /// 当前选中的笔记本
   var notebookCurrentSelectIndex = 0;
+
   set notebook_current_select_index(int index) {
-    notebookCurrentSelectIndex = index;
     setState(() {
+      notebookCurrentSelectIndex = index;
     });
     // 获取笔记列表
     _getNoteList();
   }
 
   int noteCurrentSelectIndex = 0;
+
   /// 当前选中的笔记
   set note_current_select_index(int index) {
-    noteCurrentSelectIndex = index;
+    setState(() {
+      noteCurrentSelectIndex = index;
+    });
 
-    if (notes.length <= index + 1) {
+    if (index + 1 <= notes.length) {
       var note = notes[index];
-      markdownDataStreamController.sink.add(note.content ?? "");
+      _noteEditController.text = note.content ?? "";
+      // markdownDataStreamController.sink.add(note.content ?? "");
     } else {
-      markdownDataStreamController.sink.add("");
+      // markdownDataStreamController.sink.add("");
+      _noteEditController.text = "";
     }
-
   }
 
   final TextEditingController _controller = new TextEditingController();
+
+  /// 笔记编辑
+  final TextEditingController _noteEditController = new TextEditingController();
   var isShowPreview = false;
 
   /// 输入框，动态更改提示文案
@@ -83,31 +91,29 @@ class _HomePageState extends State<HomePage> {
                     flex: 1),
                 Expanded(
                     child: NoteList(
-                        notes: notes, selectIndex: noteCurrentSelectIndex, selectAction: () {}),
+                        notes: notes,
+                        selectIndex: noteCurrentSelectIndex,
+                        selectAction: (index) {
+                          note_current_select_index = index;
+                        }),
                     flex: 1),
                 Expanded(
                   flex: 3,
-                  child: StreamBuilder<String>(
-                      stream: markdownDataStreamController.stream,
-                      builder: (context, build) {
-                        if (!build.hasData) {
-                          return NoteEditWidget(content: build.data ?? "");
-                        }
-                        print("渲染内容：" + (build.data ?? ""));
-                        if (isShowPreview) {
-                          return Markdown(
-                            // controller: controller,
-                            selectable: true,
-                            data: build.data ?? "",
-                            imageDirectory: 'https://raw.githubusercontent.com',
-                          );
-                        } else {
-                          return NoteEditWidget(content: build.data ?? "");
-                        }
-                      }),
+                  child: isShowPreview
+                      ? Markdown(
+                          // controller: controller,
+                          selectable: true,
+                          data: _noteEditController.text,
+                          imageDirectory: 'https://raw.githubusercontent.com',
+                        )
+                      : NoteEditWidget(controller: _noteEditController),
                 ),
               ]
-            : [NotebookList(notebookList: notebookList,)],
+            : [
+                NotebookList(
+                  notebookList: notebookList,
+                )
+              ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addNoteAction,
@@ -145,7 +151,6 @@ class _HomePageState extends State<HomePage> {
       setState(() {});
     }
   }
-
 
   void _addNewNotebook(String notebookName) async {
     if (_controller.text.isEmpty) {
@@ -250,7 +255,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
   /// 添加新的笔记
   _addNoteAction() {
     if (notebookList.length > 0) {
@@ -258,12 +262,30 @@ class _HomePageState extends State<HomePage> {
       var note = NoteModel.createNote(currentNotebook.id);
       notes.add(note);
       note_current_select_index = notes.length - 1;
-      setState(() {
-
-      });
+      setState(() {});
     }
   }
 
+  _saveNote() async {
+    var note = notes[noteCurrentSelectIndex];
+    note.content = _noteEditController.text;
+    if (_noteEditController.text.length <= 0) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("没有内容！")));
+      return;
+    }
+    var isOK = await SystemNetUtils.saveNote(note);
+    if (isOK) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("保存成功！")));
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("保存失败！")));
+    }
+    setState(() {});
+  }
+
+  /// 添加新的笔记本
   _addNotebookAction() {
     showDialog(
         context: context,
@@ -358,7 +380,7 @@ class _HomePageState extends State<HomePage> {
         ),
         IconButton(
           icon: Icon(Icons.save),
-          onPressed: () {},
+          onPressed: _saveNote,
         )
       ];
     } else {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:note_flutter/Model/note_model.dart';
 import 'package:note_flutter/widgets/NoteListPage.dart';
-typedef SelectTapCallback = void Function();
+typedef SelectTapCallback = void Function(int index);
 class NoteList extends StatefulWidget {
   List<NoteModel> notes = [];
   int? selectIndex;
@@ -29,7 +29,9 @@ class _NoteListState extends State<NoteList> {
               ),
               title: Text(widget.notes[index].title),
               subtitle: Text("subtitle"),
-              onTap: widget.selectAction ?? null,
+              onTap: () {
+                widget.selectAction?.call(index);
+              },
               selected: widget.selectIndex != null ? widget.selectIndex == index :
               false,
             ),

@@ -177,15 +177,14 @@ class _NoteEditPageState extends State<NoteEditPage> {
             IconButton(icon: Icon(Icons.arrow_back), onPressed: _backAction),
         actions: _barTools(),
       ),
-      body: NoteEditWidget(content: '',),
+      body: NoteEditWidget(controller: TextEditingController(),),
     );
   }
 }
 
 class NoteEditWidget extends StatefulWidget {
-  final TextEditingController controller = new TextEditingController();
-  var content = "";
-  NoteEditWidget({required this.content, Key? key}) : super(key: key);
+  final TextEditingController controller;
+  NoteEditWidget({required this.controller, Key? key}) : super(key: key);
   @override
   _NoteEditWidgetState createState() => new _NoteEditWidgetState();
 }
@@ -193,7 +192,6 @@ class NoteEditWidget extends StatefulWidget {
 class _NoteEditWidgetState extends State<NoteEditWidget> {
   @override
   Widget build(BuildContext context) {
-    widget.controller.text = widget.content;
     return Container(
       color: Colors.white,
       height: double.infinity,
