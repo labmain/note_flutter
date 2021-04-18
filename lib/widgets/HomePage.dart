@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -12,89 +13,12 @@ import 'package:note_flutter/Routers/Routers.dart';
 import 'package:note_flutter/widgets/ChangePasswordPage.dart';
 import 'package:note_flutter/widgets/NoteEditPage.dart';
 import 'package:note_flutter/widgets/NoteListPage.dart';
+import 'package:note_flutter/widgets/notebook_list_widget.dart';
 
-const String _markdownData = """
-# Markdown Example
-Markdown allows you to easily include formatted text, images, and even formatted
-Dart code in your app.
-## Titles
-Setext-style
-```
-This is an H1
-=============
-This is an H2
--------------
-```
-Atx-style
-```
-# This is an H1
-## This is an H2
-###### This is an H6
-```
-Select the valid headers:
-- [x] `# hello`
-- [ ] `#hello`
-## Links
-[Google's Homepage][Google]
-```
-[inline-style](https://www.google.com)
-[reference-style][Google]
-```
-## Images
-![Flutter logo](/dart-lang/site-shared/master/src/_assets/image/flutter/icon/64.png)
-## Tables
-|Syntax                                 |Result                               |
-|---------------------------------------|-------------------------------------|
-|`*italic 1*`                           |*italic 1*                           |
-|`_italic 2_`                           | _italic 2_                          |
-|`**bold 1**`                           |**bold 1**                           |
-|`__bold 2__`                           |__bold 2__                           |
-|`This is a ~~strikethrough~~`          |This is a ~~strikethrough~~          |
-|`***italic bold 1***`                  |***italic bold 1***                  |
-|`___italic bold 2___`                  |___italic bold 2___                  |
-|`***~~italic bold strikethrough 1~~***`|***~~italic bold strikethrough 1~~***|
-|`~~***italic bold strikethrough 2***~~`|~~***italic bold strikethrough 2***~~|
-## Styling
-Style text as _italic_, __bold__, ~~strikethrough~~, or `inline code`.
-- Use bulleted lists
-- To better clarify
-- Your points
-## Code blocks
-Formatted Dart code looks really pretty too:
-```
-void main() {
-  runApp(MaterialApp(
-    home: Scaffold(
-      body: Markdown(data: markdownData),
-    ),
-  ));
-}
-```
-## Center Title
-###### ※ ※ ※
-_* How to implement it see main.dart#L129 in example._
-## Custom Syntax
-NaOH + Al_2O_3 = NaAlO_2 + H_2O
-C_4H_10 = C_2H_6 + C_2H_4
-## Markdown widget
-This is an example of how to create your own Markdown widget:
-    Markdown(data: 'Hello _world_!');
-Enjoy!
-[Google]: https://www.google.com/
-## Line Breaks
-This is an example of how to create line breaks (tab or two whitespaces):
-line 1
-  
-   
-line 2
-  
-  
-  
-line 3
-""";
+import 'note_list_widget.dart';
+
 
 class HomePage extends StatefulWidget {
-
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -105,13 +29,36 @@ class _HomePageState extends State<HomePage> {
 
   /// 当前选中的笔记本
   var notebookCurrentSelectIndex = 0;
-  /// 当前选中功能的笔记
-  var noteCurrentSelectIndex = 0;
+  set notebook_current_select_index(int index) {
+    notebookCurrentSelectIndex = index;
+    setState(() {
+    });
+    // 获取笔记列表
+    _getNoteList();
+  }
+
+  int noteCurrentSelectIndex = 0;
+  /// 当前选中的笔记
+  set note_current_select_index(int index) {
+    noteCurrentSelectIndex = index;
+
+    if (notes.length <= index + 1) {
+      var note = notes[index];
+      markdownDataStreamController.sink.add(note.content ?? "");
+    } else {
+      markdownDataStreamController.sink.add("");
+    }
+
+  }
+
   final TextEditingController _controller = new TextEditingController();
   var isShowPreview = false;
 
   /// 输入框，动态更改提示文案
   ValueNotifier<String> _valueListenable = ValueNotifier<String>("");
+
+  /// 笔记内容
+  var markdownDataStreamController = StreamController<String>();
 
   @override
   Widget build(BuildContext context) {
@@ -126,19 +73,44 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: MediaQuery.of(context).size.width > 800
             ? [
-                Expanded(child: _listWidget(), flex: 1),
                 Expanded(
-                    child: NoteList(notes: notes,),
+                    child: NotebookList(
+                        notebookList: notebookList,
+                        selectIndex: notebookCurrentSelectIndex,
+                        selectAction: (index) {
+                          notebook_current_select_index = index;
+                        }),
+                    flex: 1),
+                Expanded(
+                    child: NoteList(
+                        notes: notes, selectIndex: noteCurrentSelectIndex, selectAction: () {}),
                     flex: 1),
                 Expanded(
                   flex: 3,
-                  child: _editWidget(),
+                  child: StreamBuilder<String>(
+                      stream: markdownDataStreamController.stream,
+                      builder: (context, build) {
+                        if (!build.hasData) {
+                          return NoteEditWidget(content: build.data ?? "");
+                        }
+                        print("渲染内容：" + (build.data ?? ""));
+                        if (isShowPreview) {
+                          return Markdown(
+                            // controller: controller,
+                            selectable: true,
+                            data: build.data ?? "",
+                            imageDirectory: 'https://raw.githubusercontent.com',
+                          );
+                        } else {
+                          return NoteEditWidget(content: build.data ?? "");
+                        }
+                      }),
                 ),
               ]
-            : [_listWidget()],
+            : [NotebookList(notebookList: notebookList,)],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _addNotebookAction,
+        onPressed: _addNoteAction,
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
@@ -152,32 +124,29 @@ class _HomePageState extends State<HomePage> {
 
   void _listOnTap() {}
 
-  void _getNotebookList() async {
-    try {
-      // 获取笔记本列表
-      notebookList = await SystemNetUtils.requestNodeBookList();
-      // 刷新ui
-      setState(() {});
-    } catch (e) {
-      print(e);
+  void _getData() async {
+    notebookList = await SystemNetUtils.requestNodeBookList();
+    if (notebookList.length > 0) {
+      var currentNotebook = notebookList[notebookCurrentSelectIndex];
+      notes = await SystemNetUtils.getAllNoteList(currentNotebook.id);
     }
+    // 刷新ui
+    setState(() {});
   }
 
   void _getNoteList() async {
-    var currentNotebook = notebookList[notebookCurrentSelectIndex];
-    if (currentNotebook.id.isEmpty) {
-      return;
-    }
-    try {
-      // 获取笔记列表
-      notes =
-      await SystemNetUtils.getAllNoteList(currentNotebook.id);
+    if (notebookList.length > 0) {
+      var currentNotebook = notebookList[notebookCurrentSelectIndex];
+      notes = await SystemNetUtils.getAllNoteList(currentNotebook.id);
+      if (notes.length > 0) {
+        note_current_select_index = 0;
+      }
       // 刷新ui
       setState(() {});
-    } catch (e) {
-      print(e);
     }
   }
+
+
   void _addNewNotebook(String notebookName) async {
     if (_controller.text.isEmpty) {
       _valueListenable.value = "请输入内容";
@@ -191,8 +160,7 @@ class _HomePageState extends State<HomePage> {
     var notebook = NotebookModel.createNote(notebookName);
     var isOK = await SystemNetUtils.createNotebook(notebook);
     if (isOK) {
-      _getNotebookList();
-      _getNoteList();
+      _getData();
       // 清空
       _controller.text = "";
       Navigator.of(context).pop(true);
@@ -208,8 +176,7 @@ class _HomePageState extends State<HomePage> {
     //     Navigator.of(context).pushNamed(Routers.login);
     //   });
     // } else {
-    _getNotebookList();
-    _getNoteList();
+    _getData();
     // }
   }
 
@@ -239,31 +206,8 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  _listWidget() {
-    return ListView(
-      restorationId: 'list_demo_list_view',
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      children: [
-        for (int index = 0; index < notebookList.length; index++)
-          ListTile(
-            leading: ExcludeSemantics(
-              child: Icon(Icons.menu_book_sharp),
-            ),
-            title: Text(notebookList[index].name),
-            subtitle: Text("subtitle"),
-            onTap: () {
-              setState(() {
-                notebookCurrentSelectIndex = index;
-              });
-            },
-            selected: notebookCurrentSelectIndex == index,
-          ),
-      ],
-    );
-  }
-
   _notelistWidget() {
-    return ;
+    return;
   }
 
   _drawer() {
@@ -306,22 +250,18 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _editWidget() {
-    if (isShowPreview) {
-      return Markdown(
-        // controller: controller,
-        selectable: true,
-        data: _markdownData,
-        imageDirectory: 'https://raw.githubusercontent.com',
-      );
-    } else {
-      return NoteEditWidget(content: _markdownData);
-    }
-  }
 
   /// 添加新的笔记
   _addNoteAction() {
-    // String? bookID = notebookList[notebookCurrentSelectIndex].id;
+    if (notebookList.length > 0) {
+      var currentNotebook = notebookList[notebookCurrentSelectIndex];
+      var note = NoteModel.createNote(currentNotebook.id);
+      notes.add(note);
+      note_current_select_index = notes.length - 1;
+      setState(() {
+
+      });
+    }
   }
 
   _addNotebookAction() {
@@ -340,13 +280,14 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Padding(padding: EdgeInsets.only(top: 8)),
                 ValueListenableBuilder(
-                    valueListenable: _valueListenable, builder: (BuildContext context, String value, Widget? child) {
-                      return Text(
-                        value,
-                        style: TextStyle(color: Colors.red, fontSize: 13),
-                      );
-                },
-                    )
+                  valueListenable: _valueListenable,
+                  builder: (BuildContext context, String value, Widget? child) {
+                    return Text(
+                      value,
+                      style: TextStyle(color: Colors.red, fontSize: 13),
+                    );
+                  },
+                )
               ],
             ),
             actions: <Widget>[
@@ -379,7 +320,8 @@ class _HomePageState extends State<HomePage> {
           onPressed: () {
             checkUserState();
           },
-        ), IconButton(
+        ),
+        IconButton(
           icon: Icon(Icons.preview),
           onPressed: () {
             isShowPreview = !isShowPreview;
@@ -426,43 +368,3 @@ class _HomePageState extends State<HomePage> {
     }
   }
 }
-
-class NoteList extends StatefulWidget {
-  List<NoteModel> notes = [];
-  NoteList({required this.notes});
-
-  @override
-  _NoteListState createState() => _NoteListState();
-}
-
-class _NoteListState extends State<NoteList> {
-  int noteCurrentSelectIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.grey[200],
-      child: ListView(
-        restorationId: 'list_note_list_view',
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        children: [
-          for (int index = 0; index < widget.notes.length; index++)
-            ListTile(
-              leading: ExcludeSemantics(
-                child: Icon(Icons.menu_book_sharp),
-              ),
-              title: Text(widget.notes[index].title),
-              subtitle: Text("subtitle"),
-              onTap: () {
-                setState(() {
-                  noteCurrentSelectIndex = index;
-                });
-              },
-              selected: noteCurrentSelectIndex == index,
-            ),
-        ],
-      ),
-    );
-  }
-}
-

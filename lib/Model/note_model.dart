@@ -13,7 +13,7 @@ class NoteModel {
   /// 笔记本标题
   String get title {
     if (content == null) {
-      return "无内容";
+      return "无标题的页面";
     }
     if (content!.length < 40) {
       return content!.replaceAll("\n", "\t");

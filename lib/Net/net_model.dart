@@ -35,7 +35,7 @@ class SystemNetUtils {
   /// 返回所有的笔记列表
   static Future<List<NoteModel>> getAllNoteList(String notebookID) async {
     ResponseResult<NoteModel> result = await NetUtils.instance
-        .get<NoteModel>('$iPString/note', params: {"id": notebookID});
+        .get<NoteModel>('$iPString/note', params: {"notebookID": notebookID});
     return result.list ?? [];
   }
 
