@@ -175,14 +175,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   void checkUserState() async {
-    // var user = await UserTools.instance.getUser();
-    // if (user.token == null) {
-    //   SchedulerBinding.instance.addPostFrameCallback((_) {
-    //     Navigator.of(context).pushNamed(Routers.login);
-    //   });
-    // } else {
-    _getData();
-    // }
+    var user = await UserTools.instance.getUser();
+    if (user.token == null) {
+      SchedulerBinding.instance?.addPostFrameCallback((_) {
+        Navigator.of(context).pushNamed(Routers.login);
+      });
+    } else {
+      _getData();
+    }
   }
 
   @override
@@ -264,6 +264,16 @@ class _HomePageState extends State<HomePage> {
       note_current_select_index = notes.length - 1;
       setState(() {});
     }
+  }
+
+  /// 删除当前笔记
+  void _deleCurNote() {
+    if (notes.isEmpty) {
+      return;
+    }
+    var note = notes[noteCurrentSelectIndex];
+    SystemNetUtils.deleteNote(note.id);
+    notes.remove(note);
   }
 
   _saveNote() async {
@@ -363,8 +373,9 @@ class _HomePageState extends State<HomePage> {
                       TextButton(
                         child: Text("确定"),
                         onPressed: () {
+                          _deleCurNote();
                           Navigator.of(context).pop(true);
-                          Navigator.of(context).pop();
+                          // Navigator.of(context).pop();
                         },
                       ),
                       TextButton(
